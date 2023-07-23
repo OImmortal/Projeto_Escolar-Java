@@ -4,6 +4,17 @@
  */
 package projeto_escolar;
 
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author joaop
@@ -26,21 +37,158 @@ public class Relatorios extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tabela = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        gerarCSV = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        tabela.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Nome", "E-mail", "Telefone", "Nome Responsável", "E-mail Responsável", "Telefone Responsável", "Endereço", "Número Cadastro"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(tabela);
+
+        jButton1.setText("Pesquisar");
+        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        gerarCSV.setText("Gerar Relatório");
+        gerarCSV.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        gerarCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerarCSVActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel1.setText("Voltar");
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(22, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(gerarCSV)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(15, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(gerarCSV)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(41, 41, 41))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void gerarCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gerarCSVActionPerformed
+        String sql = "SELECT * FROM tb_alunos";
+        String caminhoArquivo = "C:\\Users\\joaop\\Desktop\\Teste\\arquivo.csv";
+        ArrayList<String[]> dados = new ArrayList<>();
+        
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/escola", "root", "adminadmin");
+            PreparedStatement ptstmt = conn.prepareStatement(sql);
+            ResultSet rs = ptstmt.executeQuery();
+            while(rs.next()) {
+                dados.add(new String[] {rs.getString("nome"), rs.getString("email"), rs.getString("telefone"),
+                rs.getString("nome_resp"), rs.getString("email_resp"), rs.getString("telefone_resp"), rs.getString("endereco"), rs.getString("numero_cadastro")});
+            }
+            
+            gerarCSV(caminhoArquivo, dados);
+            
+        } catch (Exception e) {
+        }
+    }//GEN-LAST:event_gerarCSVActionPerformed
+
+    public static void gerarCSV(String caminhoArquivo, ArrayList<String[]> dados) {
+        try (FileWriter writer = new FileWriter(caminhoArquivo)){
+            for(String[] linha : dados) {
+                for(int i = 0;i < linha.length;i++) {
+                    writer.append(linha[i]);
+                    if(i < linha.length - 1) {
+                        writer.append(";");
+                    }
+                }
+                writer.append("\n");
+            }
+            
+            System.out.println("Arquiv gerado com sucesso");
+        } catch (IOException e) {
+            System.out.println("Erro ao gerar arquivo " + e.getMessage());
+        }
+    }
+    
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String sql = "SELECT * FROM tb_alunos ORDER BY nome";
+        
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = (Connection) DriverManager.getConnection("jdbc:mysql://localhost/escola", "root", "adminadmin");
+            
+            Statement stmt = conn.createStatement();
+            PreparedStatement ptst = conn.prepareStatement(sql);
+            ResultSet result = ptst.executeQuery();
+            DefaultTableModel tm = (DefaultTableModel) tabela.getModel();
+            tm.setRowCount(0);
+            while(result.next()) {
+                Object o[] = {result.getString("nome"), result.getString("email"), 
+                    result.getString("telefone"), result.getString("nome_resp"), result.getString("email_resp"),
+                    result.getString("telefone_resp"), result.getString("endereco"),result.getString("numero_cadastro")};
+                tm.addRow(o);
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+        Menu menu = new Menu();
+        menu.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_jLabel1MouseClicked
 
     /**
      * @param args the command line arguments
@@ -78,5 +226,10 @@ public class Relatorios extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton gerarCSV;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tabela;
     // End of variables declaration//GEN-END:variables
 }
